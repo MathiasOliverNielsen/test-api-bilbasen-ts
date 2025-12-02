@@ -4,6 +4,7 @@ import { carRouter } from "./routes/carRoutes.js";
 import { afdelingerRouter } from "./routes/afdelingerRoutes.js";
 import { brandRouter } from "./routes/brandRoutes.js";
 import { categoryRouter } from "./routes/categoryRoutes.js";
+import { userRoutes } from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -32,10 +33,11 @@ app.get("/contact", (req, res) => {
 });
 
 // API routes
-app.use("/cars", carRouter);
+app.use("/api/cars", carRouter);
 app.use("/afdelinger", afdelingerRouter);
-app.use("/brands", brandRouter);
-app.use("/categories", categoryRouter);
+app.use("/api/brands", brandRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/users", userRoutes);
 
 // 404 Error Handler
 app.use((req, res) => {

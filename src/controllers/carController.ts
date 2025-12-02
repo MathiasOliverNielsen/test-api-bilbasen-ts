@@ -12,7 +12,6 @@ export const getRecords = async (req: Request, res: Response) => {
         price: true,
         mileage: true,
         fuelType: true,
-        transmission: true,
         brand: {
           select: {
             name: true,
