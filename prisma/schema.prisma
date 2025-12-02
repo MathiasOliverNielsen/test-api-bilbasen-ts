@@ -11,7 +11,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  // url = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model User {
@@ -21,4 +21,13 @@ model User {
   password String
 
   @@map("user")
+}
+
+model Brand {
+  id Int @id @default(autoincrement())
+  name String
+  country String
+  founded Int?
+
+  @@map("brand")
 }
