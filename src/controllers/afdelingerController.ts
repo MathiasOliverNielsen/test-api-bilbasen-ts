@@ -153,13 +153,20 @@ export const afdelingerController = {
     try {
       const { region, name } = req.query;
 
+      const whereConditions: {
+        region?: { contains: string };
+        name?: { contains: string };
+      } = {};
+
+      if (region) {
+        whereConditions.region = { contains: region as string };
+      }
+      if (name) {
+        whereConditions.name = { contains: name as string };
+      }
+
       const searchResults = await prisma.afdeling.findMany({
-        where: {
-          AND: [
-            region ? { region: { contains: region as string } } : {},
-            name ? { name: { contains: name as string } } : {},
-          ],
-        },
+        where: whereConditions,
       });
 
       res.json({
