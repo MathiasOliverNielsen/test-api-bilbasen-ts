@@ -1,25 +1,42 @@
 import { Router } from "express";
-import { afdelingerController } from "../controllers/afdelingerController.js";
+import {
+  getRecords,
+  getRecord,
+  createRecord,
+  updateRecord,
+  deleteRecord,
+  getJylland,
+  getJyllandCars,
+  getJyllandCarById,
+  getFyn,
+  getFynCars,
+  getFynCarById,
+  getSjaelland,
+  getSjaellandCars,
+  getSjaellandCarById,
+} from "../controllers/afdelingerController.js";
 
 export const afdelingerRouter = Router();
 
-// GET /afdelinger - Hent alle afdelinger
-afdelingerRouter.get("/", afdelingerController.getAllAfdelinger);
+// Regionsspecifikke routes (skal være før generelle routes)
+// Jylland
+afdelingerRouter.get("/jylland", getJylland);
+afdelingerRouter.get("/jylland/cars", getJyllandCars);
+afdelingerRouter.get("/jylland/cars/:id", getJyllandCarById);
 
-// GET /afdelinger/search - Søg afdelinger (skal være før /:id for at undgå konflikt)
-afdelingerRouter.get("/search", afdelingerController.searchAfdelinger);
+// Fyn
+afdelingerRouter.get("/fyn", getFyn);
+afdelingerRouter.get("/fyn/cars", getFynCars);
+afdelingerRouter.get("/fyn/cars/:id", getFynCarById);
 
-// GET /afdelinger/:id - Hent specifik afdeling
-afdelingerRouter.get("/:id", afdelingerController.getAfdelingById);
+// Sjælland
+afdelingerRouter.get("/sjaelland", getSjaelland);
+afdelingerRouter.get("/sjaelland/cars", getSjaellandCars);
+afdelingerRouter.get("/sjaelland/cars/:id", getSjaellandCarById);
 
-// GET /afdelinger/:id/cars - Hent alle biler på en specifik afdeling
-afdelingerRouter.get("/:id/cars", afdelingerController.getCarsByAfdeling);
-
-// POST /afdelinger - Opret ny afdeling
-afdelingerRouter.post("/", afdelingerController.createAfdeling);
-
-// PUT /afdelinger/:id - Opdater afdeling
-afdelingerRouter.put("/:id", afdelingerController.updateAfdeling);
-
-// DELETE /afdelinger/:id - Slet afdeling
-afdelingerRouter.delete("/:id", afdelingerController.deleteAfdeling);
+// Grundlæggende CRUD routes
+afdelingerRouter.get("/", getRecords);
+afdelingerRouter.get("/:id", getRecord);
+afdelingerRouter.post("/", createRecord);
+afdelingerRouter.put("/:id", updateRecord);
+afdelingerRouter.delete("/:id", deleteRecord);
