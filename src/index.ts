@@ -5,6 +5,7 @@ import { afdelingerRouter } from "./routes/afdelingerRoutes.js";
 import { brandRouter } from "./routes/brandRoutes.js";
 import { categoryRouter } from "./routes/categoryRoutes.js";
 import { userRoutes } from "./routes/userRoutes.js";
+import { loginRoutes } from "./routes/loginRoutes.js";
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use("/afdelinger", afdelingerRouter);
 app.use("/api/brands", brandRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/users", userRoutes);
+app.use("/login", loginRoutes);
 
 // 404 Error Handler
 app.use((req, res) => {
