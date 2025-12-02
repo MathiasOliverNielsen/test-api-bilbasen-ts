@@ -14,6 +14,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model Brand {
   id Int @id @default(autoincrement())
   name String
@@ -54,9 +59,12 @@ model Car {
 
 model User {
   id Int @id @default(autoincrement())
-  name String
+  firstname String
+  lastname String
   email String @unique
   password String
+  role Role @default(USER)
+  isActive Boolean @default(true)
 
   @@map("user")
 }
