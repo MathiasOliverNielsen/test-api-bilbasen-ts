@@ -1,168 +1,141 @@
 import { Request, Response } from "express";
+import { prisma } from "../prisma.js";
 
-export const carController = {
-  // GET /cars - Hent alle biler
-  getAllCars: (req: Request, res: Response) => {
-    try {
-      // TODO: Implementer database logik
-      const cars = [
-        {
-          id: 1,
-          brand: "Audi",
-          model: "A4",
-          year: 2022,
-          price: 450000,
-          mileage: 15000,
-          fuelType: "Benzin",
-          transmission: "Automatisk",
-          description: "Velholdt Audi A4 med lav kilometerstand",
+// GET /cars - Hent alle biler med brand og kategori info
+export const getRecords = async (req: Request, res: Response) => {
+  try {
+    const data = await prisma.car.findMany({
+      select: {
+        id: true,
+        model: true,
+        year: true,
+        price: true,
+        mileage: true,
+        fuelType: true,
+        transmission: true,
+        brand: {
+          select: {
+            name: true,
+            country: true,
+          },
         },
-        {
-          id: 2,
-          brand: "BMW",
-          model: "320i",
-          year: 2021,
-          price: 425000,
-          mileage: 22000,
-          fuelType: "Benzin",
-          transmission: "Manuel",
-          description: "BMW 320i i perfekt stand",
+        category: {
+          select: {
+            name: true,
+            description: true,
+          },
         },
-        {
-          id: 3,
-          brand: "Mercedes-Benz",
-          model: "C200",
-          year: 2023,
-          price: 520000,
-          mileage: 8000,
-          fuelType: "Diesel",
-          transmission: "Automatisk",
-          description: "Næsten ny Mercedes C200",
-        },
-      ];
-      res.json(cars);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved hentning af biler" });
+      },
+    });
+    res.json(data);
+    console.log("carController - Alle biler hentet med relationer");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke hente liste af biler");
+  }
+};
+
+// GET /cars/:id - Hent specifik bil
+export const getRecord = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const data = await prisma.car.findUnique({
+      where: { id },
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
+
+    if (!data) {
+      return res.status(404).json({ error: "Bil ikke fundet" });
     }
-  },
 
-  // GET /cars/:id - Hent specifik bil
-  getCarById: (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      // TODO: Implementer database logik
-      const car = {
-        id,
-        brand: "Audi",
-        model: "A4",
-        year: 2022,
-        price: 450000,
-        mileage: 15000,
-        fuelType: "Benzin",
-        transmission: "Automatisk",
-        description: "Velholdt Audi A4 med lav kilometerstand",
-      };
+    res.json(data);
+    console.log(`Bil ${id} detaljer besøgt`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke hente bil");
+  }
+};
 
-      if (!car) {
-        return res.status(404).json({ error: "Bil ikke fundet" });
-      }
+// POST /cars - Opret bil
+export const createRecord = async (req: Request, res: Response) => {
+  try {
+    const { brandId, categoryId, model, year, price, mileage, fuelType } = req.body;
 
-      res.json(car);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved hentning af bil" });
+    if (!brandId || !categoryId || !model || !year || !price) {
+      return res.status(400).json({ error: "BrandId, categoryId, model, år og pris er påkrævet" });
     }
-  },
 
-  // POST /cars - Opret ny bil
-  createCar: (req: Request, res: Response) => {
-    try {
-      const { brand, model, year, price, mileage, fuelType, transmission, description } = req.body;
-
-      if (!brand || !model || !year || !price) {
-        return res.status(400).json({ error: "Brand, model, år og pris er påkrævet" });
-      }
-
-      // TODO: Implementer database logik
-      const newCar = {
-        id: Date.now(), // Temporary ID
-        brand,
+    const data = await prisma.car.create({
+      data: {
+        brandId: Number(brandId),
+        categoryId: Number(categoryId),
         model,
-        year,
-        price,
-        mileage: mileage || 0,
-        fuelType: fuelType || "Benzin",
-        transmission: transmission || "Manuel",
-        description: description || "",
-      };
+        year: Number(year),
+        price: Number(price),
+        mileage: mileage ? Number(mileage) : null,
+        fuelType,
+      },
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
 
-      res.status(201).json(newCar);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved oprettelse af bil" });
-    }
-  },
+    res.status(201).json(data);
+    console.log("Ny bil oprettet:", data.model);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke oprette bil");
+  }
+};
 
-  // PUT /cars/:id - Opdater bil
-  updateCar: (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { brand, model, year, price, mileage, fuelType, transmission, description } = req.body;
+// PUT /cars/:id - Opdater bil
+export const updateRecord = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { brandId, categoryId, model, year, price, mileage, fuelType } = req.body;
 
-      // TODO: Implementer database logik
-      const updatedCar = {
-        id,
-        brand: brand || "Audi",
-        model: model || "A4",
-        year: year || 2022,
-        price: price || 450000,
-        mileage: mileage || 15000,
-        fuelType: fuelType || "Benzin",
-        transmission: transmission || "Automatisk",
-        description: description || "Opdateret bil",
-      };
+    const data = await prisma.car.update({
+      where: { id },
+      data: {
+        brandId: brandId ? Number(brandId) : undefined,
+        categoryId: categoryId ? Number(categoryId) : undefined,
+        model,
+        year: year ? Number(year) : undefined,
+        price: price ? Number(price) : undefined,
+        mileage: mileage ? Number(mileage) : undefined,
+        fuelType,
+      },
+      include: {
+        brand: true,
+        category: true,
+      },
+    });
 
-      res.json(updatedCar);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved opdatering af bil" });
-    }
-  },
+    res.json(data);
+    console.log(`Bil ${id} opdateret`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke opdatere bil");
+  }
+};
 
-  // DELETE /cars/:id - Slet bil
-  deleteCar: (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
+// DELETE /cars/:id - Slet bil
+export const deleteRecord = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
 
-      // TODO: Implementer database logik
-      res.json({ message: `Bil med ID ${id} er slettet` });
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved sletning af bil" });
-    }
-  },
+    await prisma.car.delete({
+      where: { id },
+    });
 
-  // GET /cars/search - Søg biler
-  searchCars: (req: Request, res: Response) => {
-    try {
-      const { brand, minPrice, maxPrice, year, fuelType } = req.query;
-
-      // TODO: Implementer database søgelogik
-      const searchResults = [
-        {
-          id: 1,
-          brand: "Audi",
-          model: "A4",
-          year: 2022,
-          price: 450000,
-          mileage: 15000,
-          fuelType: "Benzin",
-        },
-      ];
-
-      res.json({
-        results: searchResults,
-        count: searchResults.length,
-        filters: { brand, minPrice, maxPrice, year, fuelType },
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved søgning af biler" });
-    }
-  },
+    res.json({ message: `Bil med ID ${id} er slettet` });
+    console.log(`Bil ${id} slettet`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke slette bil");
+  }
 };

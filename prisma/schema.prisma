@@ -4,14 +4,52 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-// Fil: ./prisma/shema.prisma
+// Fil: ./prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  // url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
+}
+
+model Brand {
+  id Int @id @default(autoincrement())
+  name String
+  country String?
+  founded Int?
+  logoUrl String?
+  
+  cars Car[]
+  
+  @@map("brand")
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String
+  description String?
+  
+  cars Car[]
+  
+  @@map("category")
+}
+
+model Car {
+  id Int @id @default(autoincrement())
+  brandId Int
+  categoryId Int
+  model String
+  year Int
+  price Int
+  mileage Int?
+  fuelType String?
+  
+  brand Brand @relation(fields: [brandId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+  
+  @@map("car")
 }
 
 model User {

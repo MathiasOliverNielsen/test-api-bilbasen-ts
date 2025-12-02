@@ -1,22 +1,19 @@
 import { Router } from "express";
-import { categoryController } from "../controllers/categoryController.js";
+import { getRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../controllers/categoryController.js";
 
 export const categoryRouter = Router();
 
 // GET /categories - Hent alle kategorier
-categoryRouter.get("/", categoryController.getAllCategories);
+categoryRouter.get("/", getRecords);
 
 // GET /categories/:id - Hent specifik kategori
-categoryRouter.get("/:id", categoryController.getCategoryById);
-
-// GET /categories/:id/cars - Hent alle biler i en kategori
-categoryRouter.get("/:id/cars", categoryController.getCarsByCategory);
+categoryRouter.get("/:id", getRecord);
 
 // POST /categories - Opret ny kategori
-categoryRouter.post("/", categoryController.createCategory);
+categoryRouter.post("/", createRecord);
 
 // PUT /categories/:id - Opdater kategori
-categoryRouter.put("/:id", categoryController.updateCategory);
+categoryRouter.put("/:id", updateRecord);
 
 // DELETE /categories/:id - Slet kategori
-categoryRouter.delete("/:id", categoryController.deleteCategory);
+categoryRouter.delete("/:id", deleteRecord);

@@ -1,19 +1,19 @@
 import { Router } from "express";
-import { brandController } from "../controllers/brandController.js";
+import { getRecords, getRecord, createRecord, updateRecord, deleteRecord } from "../controllers/brandController.js";
 
 export const brandRouter = Router();
 
 // GET /brands - Hent alle brands
-brandRouter.get("/", brandController.getAllBrands);
+brandRouter.get("/", getRecords);
 
 // GET /brands/:id - Hent specifik brand
-brandRouter.get("/:id", brandController.getBrandById);
+brandRouter.get("/:id", getRecord);
 
 // POST /brands - Opret nyt brand
-brandRouter.post("/", brandController.createBrand);
+brandRouter.post("/", createRecord);
 
 // PUT /brands/:id - Opdater brand
-brandRouter.put("/:id", brandController.updateBrand);
+brandRouter.put("/:id", updateRecord);
 
 // DELETE /brands/:id - Slet brand
-brandRouter.delete("/:id", brandController.deleteBrand);
+brandRouter.delete("/:id", deleteRecord);

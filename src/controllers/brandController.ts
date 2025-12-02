@@ -1,92 +1,102 @@
 import { Request, Response } from "express";
+import { prisma } from "../prisma.js";
 
-export const brandController = {
-  // GET /brands - Hent alle brands
-  getAllBrands: (req: Request, res: Response) => {
-    try {
-      // TODO: Implementer database logik
-      const brands = [
-        { id: 1, name: "Audi", country: "Germany", founded: 1909 },
-        { id: 2, name: "BMW", country: "Germany", founded: 1916 },
-        { id: 3, name: "Mercedes-Benz", country: "Germany", founded: 1926 },
-        { id: 4, name: "Volkswagen", country: "Germany", founded: 1937 },
-        { id: 5, name: "Toyota", country: "Japan", founded: 1937 },
-      ];
-      res.json(brands);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved hentning af brands" });
+// GET /brands - Hent alle brands
+export const getRecords = async (req: Request, res: Response) => {
+  try {
+    const data = await prisma.brand.findMany();
+    res.json(data);
+    console.log("brandController - Alle brands hentet");
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke hente liste af brands");
+  }
+};
+
+// GET /brands/:id - Hent specifik brand
+export const getRecord = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const data = await prisma.brand.findUnique({
+      where: { id },
+      include: { cars: true },
+    });
+
+    if (!data) {
+      return res.status(404).json({ error: "Brand ikke fundet" });
     }
-  },
 
-  // GET /brands/:id - Hent specifik brand
-  getBrandById: (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      // TODO: Implementer database logik
-      const brand = { id, name: "Audi", country: "Germany", founded: 1909 };
+    res.json(data);
+    console.log(`Brand ${id} detaljer besøgt`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke hente brand");
+  }
+};
 
-      if (!brand) {
-        return res.status(404).json({ error: "Brand ikke fundet" });
-      }
+// POST /brands - Opret brand
+export const createRecord = async (req: Request, res: Response) => {
+  try {
+    const { name, country, founded, logoUrl } = req.body;
 
-      res.json(brand);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved hentning af brand" });
+    if (!name) {
+      return res.status(400).json({ error: "Navn er påkrævet" });
     }
-  },
 
-  // POST /brands - Opret nyt brand
-  createBrand: (req: Request, res: Response) => {
-    try {
-      const { name, country, founded } = req.body;
-
-      if (!name || !country) {
-        return res.status(400).json({ error: "Navn og land er påkrævet" });
-      }
-
-      // TODO: Implementer database logik
-      const newBrand = {
-        id: Date.now(), // Temporary ID
+    const data = await prisma.brand.create({
+      data: {
         name,
         country,
-        founded: founded || null,
-      };
+        founded: founded ? Number(founded) : null,
+        logoUrl,
+      },
+    });
 
-      res.status(201).json(newBrand);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved oprettelse af brand" });
-    }
-  },
+    res.status(201).json(data);
+    console.log("Nyt brand oprettet:", data.name);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke oprette brand");
+  }
+};
 
-  // PUT /brands/:id - Opdater brand
-  updateBrand: (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { name, country, founded } = req.body;
+// PUT /brands/:id - Opdater brand
+export const updateRecord = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const { name, country, founded, logoUrl } = req.body;
 
-      // TODO: Implementer database logik
-      const updatedBrand = {
-        id,
-        name: name || "Audi",
-        country: country || "Germany",
-        founded: founded || 1909,
-      };
+    const data = await prisma.brand.update({
+      where: { id },
+      data: {
+        name,
+        country,
+        founded: founded ? Number(founded) : null,
+        logoUrl,
+      },
+    });
 
-      res.json(updatedBrand);
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved opdatering af brand" });
-    }
-  },
+    res.json(data);
+    console.log(`Brand ${id} opdateret`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke opdatere brand");
+  }
+};
 
-  // DELETE /brands/:id - Slet brand
-  deleteBrand: (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
+// DELETE /brands/:id - Slet brand
+export const deleteRecord = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
 
-      // TODO: Implementer database logik
-      res.json({ message: `Brand med ID ${id} er slettet` });
-    } catch (error) {
-      res.status(500).json({ error: "Fejl ved sletning af brand" });
-    }
-  },
+    await prisma.brand.delete({
+      where: { id },
+    });
+
+    res.json({ message: `Brand med ID ${id} er slettet` });
+    console.log(`Brand ${id} slettet`);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("DB Fejl: Kunne ikke slette brand");
+  }
 };
