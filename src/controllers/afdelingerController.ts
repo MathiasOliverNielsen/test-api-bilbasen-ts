@@ -1,75 +1,25 @@
 import { Request, Response } from "express";
+import { prisma } from "../prisma.js";
 
 export const afdelingerController = {
   // GET /afdelinger - Hent alle afdelinger/forhandlere
-  getAllAfdelinger: (req: Request, res: Response) => {
+  getAllAfdelinger: async (req: Request, res: Response) => {
     try {
-      // TODO: Implementer database logik
-      const afdelinger = [
-        {
-          id: 1,
-          name: "Bilbasen København",
-          address: "Hovedgade 123, 1000 København K",
-          phone: "70 10 10 15",
-          email: "kbh@bilbasen.dk",
-          manager: "Lars Nielsen",
-          openingHours: "Man-Fre: 9-17, Lør: 10-14",
-          region: "Hovedstaden",
-        },
-        {
-          id: 2,
-          name: "Bilbasen Aarhus",
-          address: "Ringgade 456, 8000 Aarhus C",
-          phone: "87 12 34 56",
-          email: "aarhus@bilbasen.dk",
-          manager: "Mette Andersen",
-          openingHours: "Man-Fre: 9-17, Lør: 10-14",
-          region: "Midtjylland",
-        },
-        {
-          id: 3,
-          name: "Bilbasen Odense",
-          address: "Vestergade 789, 5000 Odense C",
-          phone: "66 78 90 12",
-          email: "odense@bilbasen.dk",
-          manager: "Peter Jensen",
-          openingHours: "Man-Fre: 9-17, Lør: 10-14",
-          region: "Syddanmark",
-        },
-        {
-          id: 4,
-          name: "Bilbasen Aalborg",
-          address: "Boulevarden 321, 9000 Aalborg",
-          phone: "98 34 56 78",
-          email: "aalborg@bilbasen.dk",
-          manager: "Susanne Hansen",
-          openingHours: "Man-Fre: 9-17, Lør: 10-14",
-          region: "Nordjylland",
-        },
-      ];
+      const afdelinger = await prisma.afdeling.findMany();
       res.json(afdelinger);
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Fejl ved hentning af afdelinger" });
     }
   },
 
   // GET /afdelinger/:id - Hent specifik afdeling
-  getAfdelingById: (req: Request, res: Response) => {
+  getAfdelingById: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      // TODO: Implementer database logik
-      const afdeling = {
-        id,
-        name: "Bilbasen København",
-        address: "Hovedgade 123, 1000 København K",
-        phone: "70 10 10 15",
-        email: "kbh@bilbasen.dk",
-        manager: "Lars Nielsen",
-        openingHours: "Man-Fre: 9-17, Lør: 10-14",
-        region: "Hovedstaden",
-        carCount: 245, // Antal biler på denne afdeling
-        employees: 12,
-      };
+      const afdeling = await prisma.afdeling.findUnique({
+        where: { id },
+      });
 
       if (!afdeling) {
         return res.status(404).json({ error: "Afdeling ikke fundet" });
@@ -77,12 +27,13 @@ export const afdelingerController = {
 
       res.json(afdeling);
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Fejl ved hentning af afdeling" });
     }
   },
 
   // POST /afdelinger - Opret ny afdeling
-  createAfdeling: (req: Request, res: Response) => {
+  createAfdeling: async (req: Request, res: Response) => {
     try {
       const { name, address, phone, email, manager, openingHours, region } = req.body;
 
@@ -90,89 +41,101 @@ export const afdelingerController = {
         return res.status(400).json({ error: "Navn, adresse og telefon er påkrævet" });
       }
 
-      // TODO: Implementer database logik
-      const newAfdeling = {
-        id: Date.now(), // Temporary ID
-        name,
-        address,
-        phone,
-        email: email || "",
-        manager: manager || "",
-        openingHours: openingHours || "Man-Fre: 9-17",
-        region: region || "",
-        carCount: 0,
-        employees: 0,
-      };
+      const newAfdeling = await prisma.afdeling.create({
+        data: {
+          name,
+          address,
+          phone,
+          email: email || null,
+          manager: manager || null,
+          openingHours: openingHours || null,
+          region: region || null,
+        },
+      });
 
       res.status(201).json(newAfdeling);
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Fejl ved oprettelse af afdeling" });
     }
   },
 
   // PUT /afdelinger/:id - Opdater afdeling
-  updateAfdeling: (req: Request, res: Response) => {
+  updateAfdeling: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       const { name, address, phone, email, manager, openingHours, region } = req.body;
 
-      // TODO: Implementer database logik
-      const updatedAfdeling = {
-        id,
-        name: name || "Bilbasen København",
-        address: address || "Hovedgade 123, 1000 København K",
-        phone: phone || "70 10 10 15",
-        email: email || "kbh@bilbasen.dk",
-        manager: manager || "Lars Nielsen",
-        openingHours: openingHours || "Man-Fre: 9-17, Lør: 10-14",
-        region: region || "Hovedstaden",
-        carCount: 245,
-        employees: 12,
-      };
+      const existingAfdeling = await prisma.afdeling.findUnique({
+        where: { id },
+      });
+
+      if (!existingAfdeling) {
+        return res.status(404).json({ error: "Afdeling ikke fundet" });
+      }
+
+      const updatedAfdeling = await prisma.afdeling.update({
+        where: { id },
+        data: {
+          name: name ?? existingAfdeling.name,
+          address: address ?? existingAfdeling.address,
+          phone: phone ?? existingAfdeling.phone,
+          email: email ?? existingAfdeling.email,
+          manager: manager ?? existingAfdeling.manager,
+          openingHours: openingHours ?? existingAfdeling.openingHours,
+          region: region ?? existingAfdeling.region,
+        },
+      });
 
       res.json(updatedAfdeling);
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Fejl ved opdatering af afdeling" });
     }
   },
 
   // DELETE /afdelinger/:id - Slet afdeling
-  deleteAfdeling: (req: Request, res: Response) => {
+  deleteAfdeling: async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
 
-      // TODO: Implementer database logik
-      // Check om der er biler tilknyttet afdelingen før sletning
+      const existingAfdeling = await prisma.afdeling.findUnique({
+        where: { id },
+      });
+
+      if (!existingAfdeling) {
+        return res.status(404).json({ error: "Afdeling ikke fundet" });
+      }
+
+      await prisma.afdeling.delete({
+        where: { id },
+      });
+
       res.json({ message: `Afdeling med ID ${id} er slettet` });
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Fejl ved sletning af afdeling" });
     }
   },
 
   // GET /afdelinger/:id/cars - Hent alle biler på en specifik afdeling
-  getCarsByAfdeling: (req: Request, res: Response) => {
+  // Note: This endpoint requires a Car model with afdelingId relation to be fully implemented
+  getCarsByAfdeling: async (req: Request, res: Response) => {
     try {
       const afdelingId = parseInt(req.params.id);
 
-      // TODO: Implementer database logik
-      const cars = [
-        {
-          id: 1,
-          brand: "Audi",
-          model: "A4",
-          year: 2022,
-          price: 450000,
-          afdelingId,
-        },
-        {
-          id: 2,
-          brand: "BMW",
-          model: "320i",
-          year: 2021,
-          price: 425000,
-          afdelingId,
-        },
-      ];
+      const afdeling = await prisma.afdeling.findUnique({
+        where: { id: afdelingId },
+      });
+
+      if (!afdeling) {
+        return res.status(404).json({ error: "Afdeling ikke fundet" });
+      }
+
+      // Note: Cars relation not yet implemented in Prisma schema
+      // When Car model is added with afdelingId, replace with:
+      // const cars = await prisma.car.findMany({ where: { afdelingId } });
+      const cars: unknown[] = [];
 
       res.json({
         afdelingId,
@@ -180,24 +143,24 @@ export const afdelingerController = {
         count: cars.length,
       });
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Fejl ved hentning af biler på afdeling" });
     }
   },
 
   // GET /afdelinger/search - Søg afdelinger efter region eller navn
-  searchAfdelinger: (req: Request, res: Response) => {
+  searchAfdelinger: async (req: Request, res: Response) => {
     try {
       const { region, name } = req.query;
 
-      // TODO: Implementer database søgelogik
-      const searchResults = [
-        {
-          id: 1,
-          name: "Bilbasen København",
-          region: "Hovedstaden",
-          carCount: 245,
+      const searchResults = await prisma.afdeling.findMany({
+        where: {
+          AND: [
+            region ? { region: { contains: region as string } } : {},
+            name ? { name: { contains: name as string } } : {},
+          ],
         },
-      ];
+      });
 
       res.json({
         results: searchResults,
@@ -205,6 +168,7 @@ export const afdelingerController = {
         filters: { region, name },
       });
     } catch (error) {
+      console.error(error);
       res.status(500).json({ error: "Fejl ved søgning af afdelinger" });
     }
   },
