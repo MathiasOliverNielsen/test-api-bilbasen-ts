@@ -32,7 +32,6 @@ app.get("/about", (req, res) => {
 app.get("/contact", (req, res) => {
   res.send("Kontakt Bilbasen - Ring til os på 70 10 10 15");
 });
-
 // API routes
 app.use("/api/cars", carRouter);
 app.use("/afdelinger", afdelingerRouter);
