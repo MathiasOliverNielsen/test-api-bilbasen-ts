@@ -1,4 +1,3 @@
-// Fil: ./src/controllers/loginController.ts
 import { Request, Response } from "express";
 import { loginUser } from "../services/loginUser.js";
 

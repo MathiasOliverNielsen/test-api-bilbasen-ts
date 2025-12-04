@@ -1,4 +1,3 @@
-// Fil: ./src/middleware/authorizeRole.ts
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "./authenticateToken.js";
 

@@ -1,4 +1,3 @@
-// Fil: ./src/controllers/authController.ts
 import { Response } from "express";
 import { AuthRequest } from "../middleware/authenticateToken.js";
 

@@ -1,4 +1,3 @@
-// Fil: ./src/services/loginUser.ts
 import { prisma } from "../prisma.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
